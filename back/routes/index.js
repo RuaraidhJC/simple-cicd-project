@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+router.get("/secret", (req, res) => {
+  const secret = process.env.SECRET_MESSAGE;
+  if (!secret)
+    return res.statusCode(500)
+  return res.json({status: 200, secret: process.env.SECRET_MESSAGE})
+})
 
 module.exports = router;
