@@ -1,0 +1,37 @@
+version: "3.9"
+
+volumes:
+  secretDir:
+
+services:
+  back:
+    build: back/
+    volumes:
+      - secretDir:/opt/secrets
+    ports:
+      - 3000:3000
+
+  front:
+    build: front/
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 4000:80
+    healthcheck:
+      test: ['CMD', 'node', '/app/services/healthcheck']
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  deployer:
+    image: circleci/runner:launch-agent
+    volumes:
+      - type: volume
+        source: secretDir
+        target: /opt/secrets
+        volume:
+          nocopy: true
+    environment:
+      - CIRCLECI_API_TOKEN=2a6b342c35af72b12b0993b7692d321d214143941a2db8a9dbec73fb014fa6779e12798bedf7e79b
+      - CIRCLECI_RESOURCE_CLASS=ruaraidhjc/linkvalue
