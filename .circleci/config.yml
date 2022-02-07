@@ -1,0 +1,55 @@
+version: 2.1
+
+executors:
+  node_back:
+    docker:
+      - image: cimg/node:14
+
+jobs:
+  install_and_test_back:
+    executor: node
+    working_directory: ~/project/back
+    steps:
+      - checkout
+      - run: npm i
+      - run: npm test
+
+  install_and_test_front:
+    executor: node
+    working_directory: ~/project/front
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn test
+
+  build_and_push_docker_front:
+    machine:
+      image: ubuntu-2004:202111-02
+    working_directory: ~/project/front
+    steps:
+      - checkout
+      - run: docker login -u ruaraidhjc -p ${DOCKER_PASSWORD}
+      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front .
+      - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front
+
+  build_and_push_docker_back:
+    machine:
+      image: ubuntu-2004:202111-02
+    working_directory: ~/project/back
+    steps:
+      - checkout
+      - run: docker login -u ruaraidhjc -p ${DOCKER_PASSWORD}
+      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back .
+      - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back
+
+workflows:
+  main:
+    jobs:
+      - install_and_test_back
+      - build_and_push_docker_back:
+          requires:
+            - install_and_test_back
+      - install_and_test_front
+      - build_and_push_docker_front:
+          requires:
+            - install_and_test_front
