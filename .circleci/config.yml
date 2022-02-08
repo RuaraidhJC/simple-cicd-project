@@ -61,8 +61,6 @@ jobs:
       - heroku/check-authentication
       - checkout
       - run: git submodule update --init
-      - setup_remote_docker:
-          docker_layer_caching: true
       - run: |
           cd back/ &&
           heroku container:login &&
@@ -75,9 +73,9 @@ jobs:
     steps:
       - irc/notify:
           nick: fatboi42
-          message: >
-            SMOrc I'm a bot SMOrc
-            PrideRhino Repo: << parameters.project.git_url >>
+          message: >-
+            SMOrc I''m a bot SMOrc
+            PrideRhino Repo: << pipeline.project.git_url >>
             SeemsGood Successfully built & deployed commit:
             << pipeline.git.revision >>
           server: irc.chat.twitch.tv
@@ -91,7 +89,6 @@ workflows:
           path: back
           name: docker_publish_back
           docker-context: back
-          remote-docker-dlc: true
           lint-dockerfile: true
           image: ruaraidhjc/linkvalue
           tag: ${CIRCLE_SHA1:0:7}.back
@@ -108,7 +105,6 @@ workflows:
           after_checkout:
             - run: git submodule update --init
           docker-context: front
-          remote-docker-dlc: true
           lint-dockerfile: true
           image: ruaraidhjc/linkvalue
           tag: ${CIRCLE_SHA1:0:7}.front
