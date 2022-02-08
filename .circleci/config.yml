@@ -9,6 +9,17 @@ executors:
     docker:
       - image: cimg/node:16.14
 
+
+x-heroku-app-back: &heroku-app-back
+  app-name: circleci-demo-back
+  process-types: web
+  working_directory: ~/project/back
+
+x-heroku-app-front: &heroku-app-front
+  app-name: circleci-demo-front
+  process-types: web
+  working_directory: ~/project/front
+
 jobs:
   install_and_test_back:
     executor: node
@@ -37,48 +48,58 @@ jobs:
           paths:
             - front/
 
-  build_and_deploy_docker_front:
-    docker:
-      - image: cimg/base:2022.02
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-    # - run: git submodule update --init
-      - attach_at: ~/project/
-      - docker/publish:
-          path: front/
-          lint-dockerfile: true
-          image: linkvalue
-          tag: ${CIRCLE_SHA1}.front
-      - heroku/push-docker-image:
-          working_directory: ~/project/front
-          app-name: circleci-demo-front
-
-  build_and_deploy_docker_back:
+  deploy_docker_back:
     machine:
       image: ubuntu-2004:202111-02
     steps:
+      - heroku/install
+      - heroku/check-authentication
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - docker/publish:
-          path: back/
-          lint-dockerfile: true
-          image: linkvalue
-          tag: ${CIRCLE_SHA1}.back
-      - heroku/push-docker-image:
-          working_directory:
-          app-name: circleci-demo-back
+      - heroky/push-docker-image:
+          <<: *x-heroku-app-back:
+      - heroku/release-docker-image:
+          <<: *x-heroku-app-back:
+
+  deploy_docker_front:
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - heroku/install
+      - heroku/check-authentication
+      - checkout
+      - attach-at:
+          ~/project
+      - heroky/push-docker-image:
+          <<: *x-heroku-app-front:
+      - heroku/release-docker-image:
+          <<: *x-heroku-app-front:
+
+
 
 workflows:
   main:
     jobs:
       - install_and_test_back
-      - build_and_deploy_docker_back:
+      - docker/publish:
+          path: back/
+          remote-docker-dlc: true
+          lint-dockerfile: true
+          image: linkvalue
+          tag: ${CIRCLE_SHA1}.back
+      - deploy_docker_back:
           requires:
             - install_and_test_back
+
       - install_and_test_front
-      - build_and_deploy_docker_front:
+      - docker/publish:
+          attach-at: ~/project
+          path: front/
+          remote-docker-dlc: true
+          lint-dockerfile: true
+          image: linkvalue
+          tag: ${CIRCLE_SHA1}.front
+          requires:
+            - install_and_test_front
+      - deploy_docker_front:
           requires:
             - install_and_test_front
