@@ -69,6 +69,15 @@ jobs:
           heroku container:push -a circleci-demo-back web
           heroku container:release -a circleci-demo-back web
 
+  notify_twitch:
+    docker:
+      - image: cimg/base:2022.02
+    steps:
+      - irc/notify:
+          nick: fatboi42
+          message: "Successfully build & deployed commit: ${CIRCLE_SHA1:0:7}"
+          server: irc.chat.twitch.tv
+          channel: fatboi42
 
 workflows:
   main:
@@ -105,11 +114,7 @@ workflows:
           requires:
             - install_and_test_front
 
-      - irc/notify:
-          nick: fatboi42
-          message: "Successfully build & deployed commit: ${CIRCLE_SHA1:0:7}"
-          server: irc.chat.twitch.tv
-          channel: fatboi42
+      - notify_twitch:
           requires:
             - docker_publish_back
             - docker_publish_front
