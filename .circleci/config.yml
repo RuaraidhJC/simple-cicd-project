@@ -9,6 +9,9 @@ executors:
   node:
     docker:
       - image: cimg/node:16.14
+  base:
+    docker:
+      - image: cimg/base:2022.02
 
 jobs:
   install_and_test_back:
@@ -39,14 +42,12 @@ jobs:
             - front/
 
   deploy_docker_back:
-    docker:
-      - image: cimg/base:2022.02
+    executor: base
     steps:
       - heroku/install
       - heroku/check-authentication
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - run: |
           cd back/ &&
           heroku container:login &&
@@ -54,13 +55,13 @@ jobs:
           heroku container:release -a circleci-demo-back web
 
   deploy_docker_front:
-    docker:
-      - image: cimg/base:2022.02
+    executor: base
     steps:
       - heroku/install
       - heroku/check-authentication
       - checkout
       - run: git submodule update --init
+      - setup_remote_docker
       - run: |
           cd back/ &&
           heroku container:login &&
@@ -68,16 +69,14 @@ jobs:
           heroku container:release -a circleci-demo-back web
 
   notify_twitch:
-    docker:
-      - image: cimg/base:2022.02
+    executor: base
     steps:
       - irc/notify:
           nick: fatboi42
-          message: >-
-            SMOrc I''m a bot SMOrc
-            PrideRhino Repo: << pipeline.project.git_url >>
-            SeemsGood Successfully built & deployed commit:
-            << pipeline.git.revision >>
+          message: >
+            MrDestructoid I'"'"'m a bot!
+            PrideRhino GitHub branch: << pipeline.project.git_url >>/tree/<< pipeline.git.branch >>
+            SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
           server: irc.chat.twitch.tv
           channel: fatboi42
 
