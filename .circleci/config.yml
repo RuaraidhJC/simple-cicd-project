@@ -75,7 +75,11 @@ jobs:
     steps:
       - irc/notify:
           nick: fatboi42
-          message: "Successfully build & deployed commit: ${CIRCLE_SHA1:0:7}"
+          message: >
+            SMOrc I'm a bot SMOrc
+            PrideRhino Repo: << parameters.project.git_url >>
+            SeemsGood Successfully built & deployed commit:
+            << pipeline.git.revision >>
           server: irc.chat.twitch.tv
           channel: fatboi42
 
