@@ -27,7 +27,7 @@ jobs:
           command: yarn install
           working_directory: ~/project/front
       - run:
-          command: yarn test
+          command: yarn lint
           working_directory: ~/project/front
 
   build_and_push_docker_front:
