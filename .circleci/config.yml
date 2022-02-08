@@ -8,19 +8,27 @@ executors:
 jobs:
   install_and_test_back:
     executor: node
-    working_directory: ~/project/back
     steps:
       - checkout
-      - run: npm i
-      - run: npm test
+      - run:
+          command: npm i
+          working_directory: ~/project/back
+      - run:
+          command: npm test
+          working_directory: ~/project/back
 
   install_and_test_front:
     executor: node
-    working_directory: ~/project/front
+
     steps:
       - checkout
-      - run: yarn install
-      - run: yarn test
+      - run: git submodule update --init
+      - run:
+          command: yarn install
+          working_directory: ~/project/front
+      - run:
+          command: yarn test
+          working_directory: ~/project/front
 
   build_and_push_docker_front:
     machine:
