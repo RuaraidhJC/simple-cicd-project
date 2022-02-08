@@ -56,6 +56,7 @@ jobs:
           docker_layer_caching: true
       - run: |
           cd back/ &&
+          heroku container:login &&
           heroku container:push -a circleci-demo-back web
           heroku container:release -a circleci-demo-back web
 
@@ -73,6 +74,7 @@ jobs:
           docker_layer_caching: true
       - run: |
           cd back/ &&
+          heroku container:login &&
           heroku container:push -a circleci-demo-back web
           heroku container:release -a circleci-demo-back web
 
@@ -89,6 +91,8 @@ workflows:
           lint-dockerfile: true
           image: ruaraidhjc/linkvalue
           tag: ${CIRCLE_SHA1}.back
+          requires:
+            - install_and_test_back
       - deploy_docker_back:
           requires:
             - install_and_test_back
