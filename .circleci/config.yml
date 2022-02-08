@@ -11,9 +11,6 @@ executors:
 
 
 x-heroku-app-back: &heroku-app-back
-  app-name: circleci-demo-back
-  process-types: web
-  working_directory: ~/project/back
 
 x-heroku-app-front: &heroku-app-front
   app-name: circleci-demo-front
@@ -49,30 +46,34 @@ jobs:
             - front/
 
   deploy_docker_back:
-    machine:
-      image: ubuntu-2004:202111-02
+    docker:
+      - image: cimg/base:2022.02
     steps:
       - heroku/install
       - heroku/check-authentication
       - checkout
-      - heroku/push-docker-image:
-          <<: *heroku-app-back
-      - heroku/release-docker-image:
-          <<: *heroku-app-back
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: |
+          cd back/ &&
+          heroku container:push -a circleci-demo-back web
+          heroku container:release -a circleci-demo-back web
+
 
   deploy_docker_front:
-    machine:
-      image: ubuntu-2004:202111-02
+    docker:
+      - image: cimg/base:2022.02
     steps:
       - heroku/install
       - heroku/check-authentication
       - checkout
-      - attach-at:
-          ~/project
-      - heroku/push-docker-image:
-          <<: *heroku-app-front
-      - heroku/release-docker-image:
-          <<: *heroku-app-front
+      - attach_at: ~/project
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: |
+          cd back/ &&
+          heroku container:push -a circleci-demo-back web
+          heroku container:release -a circleci-demo-back web
 
 
 
