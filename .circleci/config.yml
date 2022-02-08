@@ -36,18 +36,18 @@ jobs:
     working_directory: ~/project/front
     steps:
       - checkout
+      - run: git submodule update --init
       - run: docker login -u ruaraidhjc -p ${DOCKER_PASSWORD}
-      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front .
+      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front front/
       - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front
 
   build_and_push_docker_back:
     machine:
       image: ubuntu-2004:202111-02
-    working_directory: ~/project/back
     steps:
       - checkout
       - run: docker login -u ruaraidhjc -p ${DOCKER_PASSWORD}
-      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back .
+      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back back/
       - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back
 
 workflows:
