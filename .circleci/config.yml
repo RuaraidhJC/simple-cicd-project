@@ -67,7 +67,8 @@ jobs:
       - heroku/install
       - heroku/check-authentication
       - checkout
-      - attach_at: ~/project
+      - attach_workspace:
+          at: ~/project
       - setup_remote_docker:
           docker_layer_caching: true
       - run: |
