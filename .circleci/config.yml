@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   heroku: circleci/heroku@1.2.6
   docker: circleci/docker@2.0.1
+  irc: circleci/irc@0.2.0
 
 executors:
   node:
@@ -59,8 +60,7 @@ jobs:
       - heroku/install
       - heroku/check-authentication
       - checkout
-      - attach_workspace:
-          at: ~/project
+      - run: git submodule update --init
       - setup_remote_docker:
           docker_layer_caching: true
       - run: |
@@ -76,11 +76,12 @@ workflows:
       - install_and_test_back
       - docker/publish:
           path: back
+          name: docker_publish_back
           docker-context: back
           remote-docker-dlc: true
           lint-dockerfile: true
           image: ruaraidhjc/linkvalue
-          tag: ${CIRCLE_SHA1}.back
+          tag: ${CIRCLE_SHA1:0:7}.back
           requires:
             - install_and_test_back
       - deploy_docker_back:
@@ -89,15 +90,28 @@ workflows:
 
       - install_and_test_front
       - docker/publish:
-          attach-at: ~/project
+          name: docker_publish_front
           path: front
+          after_checkout:
+            - run: git submodule update --init
           docker-context: front
           remote-docker-dlc: true
           lint-dockerfile: true
           image: ruaraidhjc/linkvalue
-          tag: ${CIRCLE_SHA1}.front
+          tag: ${CIRCLE_SHA1:0:7}.front
           requires:
             - install_and_test_front
       - deploy_docker_front:
           requires:
             - install_and_test_front
+
+      - irc/notify:
+          nick: fatboi42
+          message: "Successfully build & deployed commit: ${CIRCLE_SHA1:0:7}"
+          server: irc.chat.twitch.tv
+          channel: fatboi42
+          requires:
+            - docker_publish_back
+            - docker_publish_front
+            - deploy_docker_back
+            - deploy_docker_front
