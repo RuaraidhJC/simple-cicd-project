@@ -83,7 +83,8 @@ workflows:
     jobs:
       - install_and_test_back
       - docker/publish:
-          path: back/
+          path: back
+          context: back
           remote-docker-dlc: true
           lint-dockerfile: true
           image: linkvalue
@@ -95,7 +96,8 @@ workflows:
       - install_and_test_front
       - docker/publish:
           attach-at: ~/project
-          path: front/
+          path: front
+          context: front
           remote-docker-dlc: true
           lint-dockerfile: true
           image: linkvalue
