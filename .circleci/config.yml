@@ -56,9 +56,9 @@ jobs:
       - heroku/check-authentication
       - checkout
       - heroky/push-docker-image:
-          <<: *x-heroku-app-back:
+          <<: *x-heroku-app-back
       - heroku/release-docker-image:
-          <<: *x-heroku-app-back:
+          <<: *x-heroku-app-back
 
   deploy_docker_front:
     machine:
@@ -70,9 +70,9 @@ jobs:
       - attach-at:
           ~/project
       - heroky/push-docker-image:
-          <<: *x-heroku-app-front:
+          <<: *x-heroku-app-front
       - heroku/release-docker-image:
-          <<: *x-heroku-app-front:
+          <<: *x-heroku-app-front
 
 
 
