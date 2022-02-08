@@ -75,10 +75,10 @@ workflows:
   main:
     jobs:
       - install_and_test_back
-      - build_and_push_docker_back:
+      - build_and_deploy_docker_back:
           requires:
             - install_and_test_back
       - install_and_test_front
-      - build_and_push_docker_front:
+      - build_and_deploy_docker_front:
           requires:
             - install_and_test_front
