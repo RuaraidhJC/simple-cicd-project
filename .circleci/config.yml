@@ -1,5 +1,9 @@
 version: 2.1
 
+orbs:
+  heroku: circleci/heroku@1.2.6
+  docker: circleci/docker@2.0.1
+
 executors:
   node:
     docker:
@@ -19,7 +23,6 @@ jobs:
 
   install_and_test_front:
     executor: node
-
     steps:
       - checkout
       - run: git submodule update --init
@@ -29,26 +32,44 @@ jobs:
       - run:
           command: yarn lint
           working_directory: ~/project/front
+      - persist_to_workspace:
+          root: ~/project/
+          paths:
+            - front/
 
-  build_and_push_docker_front:
-    machine:
-      image: ubuntu-2004:202111-02
-    working_directory: ~/project/front
+  build_and_deploy_docker_front:
+    docker:
+      - image: cimg/base:2022.02
     steps:
       - checkout
-      - run: git submodule update --init
-      - run: docker login -u ruaraidhjc -p ${DOCKER_PASSWORD}
-      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front front/
-      - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front
+      - setup_remote_docker:
+          docker_layer_caching: true
+    # - run: git submodule update --init
+      - attach_at: ~/project/
+      - docker/publish:
+          path: front/
+          lint-dockerfile: true
+          image: linkvalue
+          tag: ${CIRCLE_SHA1}.front
+      - heroku/push-docker-image:
+          working_directory: ~/project/front
+          app-name: circleci-demo-front
 
-  build_and_push_docker_back:
+  build_and_deploy_docker_back:
     machine:
       image: ubuntu-2004:202111-02
     steps:
       - checkout
-      - run: docker login -u ruaraidhjc -p ${DOCKER_PASSWORD}
-      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back back/
-      - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - docker/publish:
+          path: back/
+          lint-dockerfile: true
+          image: linkvalue
+          tag: ${CIRCLE_SHA1}.back
+      - heroku/push-docker-image:
+          working_directory:
+          app-name: circleci-demo-back
 
 workflows:
   main:
