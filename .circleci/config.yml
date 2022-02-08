@@ -9,14 +9,6 @@ executors:
     docker:
       - image: cimg/node:16.14
 
-
-x-heroku-app-back: &heroku-app-back
-
-x-heroku-app-front: &heroku-app-front
-  app-name: circleci-demo-front
-  process-types: web
-  working_directory: ~/project/front
-
 jobs:
   install_and_test_back:
     executor: node
@@ -60,7 +52,6 @@ jobs:
           heroku container:push -a circleci-demo-back web
           heroku container:release -a circleci-demo-back web
 
-
   deploy_docker_front:
     docker:
       - image: cimg/base:2022.02
@@ -77,7 +68,6 @@ jobs:
           heroku container:login &&
           heroku container:push -a circleci-demo-back web
           heroku container:release -a circleci-demo-back web
-
 
 
 workflows:
