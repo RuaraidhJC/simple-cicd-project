@@ -1,7 +1,7 @@
 version: 2.1
 
 executors:
-  node_back:
+  node:
     docker:
       - image: cimg/node:14
 
