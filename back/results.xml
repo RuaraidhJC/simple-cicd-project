@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="0.0130" tests="6" failures="1">
+  <testsuite name="Root Suite" timestamp="2022-02-09T00:25:38" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="These are meant to be fLaKy" timestamp="2022-02-09T00:25:38" tests="4" file="/home/ruajaychalmers/Clones/Perso/simple-cicd-project/back/test/flaky.js" time="0.0120" failures="1">
+    <testcase name="These are meant to be fLaKy should be fLaKy" time="0.0000" classname="should be fLaKy">
+    </testcase>
+    <testcase name="These are meant to be fLaKy should be fLaKy again" time="0.0100" classname="should be fLaKy again">
+      <failure message="The expression evaluated to a falsy value:
+
+  assert(random)
+" type="AssertionError"><![CDATA[AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(random)
+
+    at Context.<anonymous> (test/flaky.js:14:9)
+    at processImmediate (internal/timers.js:464:21)]]></failure>
+    </testcase>
+    <testcase name="These are meant to be fLaKy should be fLaKy too" time="0.0000" classname="should be fLaKy too">
+    </testcase>
+    <testcase name="These are meant to be fLaKy should be very fLaKy" time="0.0000" classname="should be very fLaKy">
+    </testcase>
+  </testsuite>
+  <testsuite name="Testing helper reading function " timestamp="2022-02-09T00:25:38" tests="2" file="/home/ruajaychalmers/Clones/Perso/simple-cicd-project/back/test/reader.js" time="0.0010" failures="0">
+    <testcase name="Testing helper reading function  should be able to read from a temp file" time="0.0010" classname="should be able to read from a temp file">
+    </testcase>
+    <testcase name="Testing helper reading function  shouldn&apos;t crash and return empty string if file not exists" time="0.0000" classname="shouldn&apos;t crash and return empty string if file not exists">
+    </testcase>
+  </testsuite>
+</testsuites>
