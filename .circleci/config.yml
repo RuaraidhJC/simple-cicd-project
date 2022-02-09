@@ -25,7 +25,7 @@ jobs:
           command: npm test
           working_directory: ~/project/back
       - store_test_results:
-          path: ~/~/project/back/results.xml
+          path: ~/project/back/results.xml
 
   install_and_test_front:
     executor: node
