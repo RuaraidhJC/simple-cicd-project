@@ -123,8 +123,8 @@ jobs:
             MrDestructoid I'"'"'m a bot!
             PrideRhino GitHub branch: << pipeline.project.git_url >>/tree/<< pipeline.git.branch >>
             GlitchCat New deployment for https://circleci-demo-
-            <<# parameters.run-front-workflow >>front<</ parameters.run-front-workflow >>
-            <<# parameters.run-back-workflow >>back<</ parameters.run-back-workflow >>
+            <<# pipeline.parameters.run-front-workflow >>front<</ pipeline.parameters.run-front-workflow >>
+            <<# pipeline.parameters.run-back-workflow >>back<</ pipeline.parameters.run-back-workflow >>
             .herokuapp.com
             SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
           server: irc.chat.twitch.tv
@@ -132,7 +132,7 @@ jobs:
 
 workflows:
   front:
-    when: << parameters.run-front-workflow >>
+    when: << pipeline.parameters.run-front-workflow >>
     jobs:
       - install_and_test_front
       - docker/publish:
@@ -162,7 +162,7 @@ workflows:
             - deploy_docker_front
 
   back:
-    when: << parameters.run-back-workflow >>
+    when: << pipeline.parameters.run-back-workflow >>
     jobs:
       - install_and_test_back
       - docker/publish:
