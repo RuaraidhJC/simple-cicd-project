@@ -63,10 +63,10 @@ jobs:
       - run: git submodule update --init
       - setup_remote_docker
       - run: |
-          cd back/ &&
+          cd front/ &&
           heroku container:login &&
-          heroku container:push -a circleci-demo-back web
-          heroku container:release -a circleci-demo-back web
+          heroku container:push -a circleci-demo-front web
+          heroku container:release -a circleci-demo-front web
 
   notify_twitch:
     executor: base
