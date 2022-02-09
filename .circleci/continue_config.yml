@@ -166,6 +166,7 @@ workflows:
     jobs:
       - install_and_test_back
       - docker/publish:
+          <<: *master-branch-filter
           path: back
           name: docker_publish_back
           docker-context: back
