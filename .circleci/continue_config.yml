@@ -119,13 +119,10 @@ jobs:
     steps:
       - irc/notify:
           nick: fatboi42
-          message: |
+          message: >
             MrDestructoid I'"'"'m a bot!
             PrideRhino GitHub branch: << pipeline.project.git_url >>/tree/<< pipeline.git.branch >>
-            GlitchCat New deployment for https://circleci-demo-
-            <<# pipeline.parameters.run-front-workflow >>front<</ pipeline.parameters.run-front-workflow >>
-            <<# pipeline.parameters.run-back-workflow >>back<</ pipeline.parameters.run-back-workflow >>
-            .herokuapp.com
+            GlitchCat New deployment for https://circleci-demo-<<# pipeline.parameters.run-front-workflow >>front<</ pipeline.parameters.run-front-workflow >><<# pipeline.parameters.run-back-workflow >>back<</ pipeline.parameters.run-back-workflow >>.herokuapp.com
             SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
           server: irc.chat.twitch.tv
           channel: fatboi42
