@@ -119,7 +119,7 @@ jobs:
     steps:
       - irc/notify:
           nick: fatboi42
-          message: >
+          message: |
             MrDestructoid I'"'"'m a bot!
             PrideRhino GitHub branch: << pipeline.project.git_url >>/tree/<< pipeline.git.branch >>
             GlitchCat New deployment for https://circleci-demo-
@@ -174,15 +174,12 @@ workflows:
           tag: ${CIRCLE_SHA1:0:7}.back
           requires:
             - install_and_test_back
-      - deploy_docker_back:
-          requires:
-            - install_and_test_back
       - approve_deploy:
           <<: *master-branch-filter
           type: approval
           requires:
             - install_and_test_back
-      - deploy_docker_front:
+      - deploy_docker_back:
           <<: *master-branch-filter
           requires:
             - approve_deploy
