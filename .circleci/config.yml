@@ -1,123 +1,30 @@
 version: 2.1
 
+# this allows you to use CircleCI's dynamic configuration feature
+setup: true
+
+# the path-filtering orb is required to continue a pipeline based on
+# the path of an updated fileset
 orbs:
-  heroku: circleci/heroku@1.2.6
-  docker: circleci/docker@2.0.1
-  irc: circleci/irc@0.2.0
-
-executors:
-  node:
-    docker:
-      - image: cimg/node:16.14
-  base:
-    docker:
-      - image: cimg/base:2022.02
-
-jobs:
-  install_and_test_back:
-    executor: node
-    steps:
-      - checkout
-      - run:
-          command: npm i
-          working_directory: ~/project/back
-      - run:
-          command: npm test
-          working_directory: ~/project/back
-      - store_test_results:
-          path: ~/project/back/results.xml
-
-  install_and_test_front:
-    executor: node
-    steps:
-      - checkout
-      - run: git submodule update --init
-      - run:
-          command: yarn install
-          working_directory: ~/project/front
-      - run:
-          command: yarn lint
-          working_directory: ~/project/front
-      - persist_to_workspace:
-          root: ~/project/
-          paths:
-            - front/
-
-  deploy_docker_back:
-    executor: base
-    steps:
-      - heroku/install
-      - heroku/check-authentication
-      - checkout
-      - setup_remote_docker
-      - run: |
-          cd back/ &&
-          heroku container:login &&
-          heroku container:push -a circleci-demo-back web
-          heroku container:release -a circleci-demo-back web
-
-  deploy_docker_front:
-    executor: base
-    steps:
-      - heroku/install
-      - heroku/check-authentication
-      - checkout
-      - run: git submodule update --init
-      - setup_remote_docker
-      - run: |
-          cd front/ &&
-          heroku container:login &&
-          heroku container:push -a circleci-demo-front web
-          heroku container:release -a circleci-demo-front web
-
-  notify_twitch:
-    executor: base
-    steps:
-      - irc/notify:
-          nick: fatboi42
-          message: >
-            MrDestructoid I'"'"'m a bot!
-            PrideRhino GitHub branch: << pipeline.project.git_url >>/tree/<< pipeline.git.branch >>
-            SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
-          server: irc.chat.twitch.tv
-          channel: fatboi42
+  path-filtering: circleci/path-filtering@0.1.1
 
 workflows:
-  main:
+  # the always-run workflow is always triggered, regardless of the pipeline parameters.
+  filter-workflows:
     jobs:
-      - install_and_test_back
-      - docker/publish:
-          path: back
-          name: docker_publish_back
-          docker-context: back
-          lint-dockerfile: true
-          image: ruaraidhjc/linkvalue
-          tag: ${CIRCLE_SHA1:0:7}.back
-          requires:
-            - install_and_test_back
-      - deploy_docker_back:
-          requires:
-            - install_and_test_back
-
-      - install_and_test_front
-      - docker/publish:
-          name: docker_publish_front
-          path: front
-          after_checkout:
-            - run: git submodule update --init
-          docker-context: front
-          lint-dockerfile: true
-          image: ruaraidhjc/linkvalue
-          tag: ${CIRCLE_SHA1:0:7}.front
-          requires:
-            - install_and_test_front
-      - deploy_docker_front:
-          requires:
-            - install_and_test_front
-
-      - notify_twitch:
-          requires:
-            - docker_publish_back
-            - docker_publish_front
-            - deploy_docker_back
-            - deploy_docker_front
+      # the path-filtering/filter job determines which pipeline
+      # parameters to update.
+      - path-filtering/filter:
+          name: check-updated-files
+          # 3-column, whitespace-delimited mapping. One mapping per
+          # line:
+          # <regex path-to-test> <parameter-to-set> <value-of-pipeline-parameter>
+          mapping: |
+            front/.* run-front-workflow true
+            back/.* run-back-workflow true
+          base-revision: master
+          # this is the path of the configuration we should trigger once
+          # path filtering and pipeline parameter value updates are
+          # complete. In this case, we are using the parent dynamic
+          # configuration itself.
+          config-path: .circleci/continue_config.yml

@@ -1,0 +1,191 @@
+version: 2.1
+
+orbs:
+  heroku: circleci/heroku@1.2.6
+  docker: circleci/docker@2.0.1
+  irc: circleci/irc@0.2.0
+
+parameters:
+  run-front-workflow:
+    type: boolean
+    default: false
+  run-back-workflow:
+    type: boolean
+    default: false
+
+x-back-dependencies-cache-key: &back-dependencies-cache-key
+  key: node-modules-back-{{ checksum "back/package.json" }}
+
+x-front-dependencies-cache-key: &front-dependencies-cache-key
+  key: node-modules-front-{{ checksum "front/package.json" }}
+
+x-master-branch-filter: &master-branch-filter
+  filters:
+    branches:
+      only:
+        - master
+
+x-master-branch-condition: &master-branch-condition
+  when:
+    equal: [<< pipeline.git.branch >>, master]
+
+executors:
+  node:
+    docker:
+      - image: cimg/node:16.14
+    resource_class: small
+  base:
+    docker:
+      - image: cimg/base:2022.02
+    resource_class: small
+
+jobs:
+  install_and_test_back:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache: *back-dependencies-cache-key
+      - run:
+          command: npm i
+          working_directory: ~/project/back
+      - save_cache:
+          <<: *back-dependencies-cache-key
+          paths:
+            - back/node_modules
+      - run:
+          command: npm test
+          working_directory: ~/project/back
+      - store_test_results:
+          path: ~/project/back/results.xml
+
+  install_and_test_front:
+    executor: node
+    steps:
+      - checkout
+      - run: git submodule update --init
+      - persist_to_workspace:
+          <<: *master-branch-condition
+          root: ~/project
+          paths:
+            - front/
+      - restore_cache: *front-dependencies-cache-key
+      - run:
+          command: yarn install
+          working_directory: ~/project/front
+      - save_cache:
+          <<: *front-dependencies-cache-key
+          paths:
+            - back/node_modules
+      - run:
+          command: yarn lint
+          working_directory: ~/project/front
+      - persist_to_workspace:
+          root: ~/project/
+          paths:
+            - front/
+
+  deploy_docker_back:
+    executor: base
+    steps:
+      - heroku/install
+      - heroku/check-authentication
+      - checkout
+      - setup_remote_docker:
+          docker_layer_cache: true
+      - run: |
+          cd back/ &&
+          heroku container:login &&
+          heroku container:push -a circleci-demo-back web
+          heroku container:release -a circleci-demo-back web
+
+  deploy_docker_front:
+    executor: base
+    steps:
+      - heroku/install
+      - heroku/check-authentication
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - setup_remote_docker:
+          docker_layer_cache: true
+      - run: |
+          cd front/ &&
+          heroku container:login &&
+          heroku container:push -a circleci-demo-front web
+          heroku container:release -a circleci-demo-front web
+
+  notify_twitch:
+    executor: base
+    steps:
+      - irc/notify:
+          nick: fatboi42
+          message: >
+            MrDestructoid I'"'"'m a bot!
+            PrideRhino GitHub branch: << pipeline.project.git_url >>/tree/<< pipeline.git.branch >>
+            GlitchCat New deployment for https://circleci-demo-
+            <<# parameters.run-front-workflow >>front<</ parameters.run-front-workflow >>
+            <<# parameters.run-back-workflow >>back<</ parameters.run-back-workflow >>
+            .herokuapp.com
+            SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
+          server: irc.chat.twitch.tv
+          channel: fatboi42
+
+workflows:
+  front:
+    when: << parameters.run-front-workflow >>
+    jobs:
+      - install_and_test_front
+      - docker/publish:
+          <<: *master-branch-filter
+          attach-at: ~/project
+          name: docker_publish_front
+          path: front
+          after_checkout:
+            - run: git submodule update --init
+          docker-context: front
+          lint-dockerfile: true
+          image: ruaraidhjc/linkvalue
+          tag: ${CIRCLE_SHA1:0:7}.front
+          requires:
+            - install_and_test_front
+      - approve_deploy:
+          <<: *master-branch-filter
+          type: approval
+          requires:
+            - install_and_test_front
+      - deploy_docker_front:
+          <<: *master-branch-filter
+          requires:
+            - approve_deploy
+      - notify_twitch:
+          requires:
+            - deploy_docker_front
+
+  back:
+    when: << parameters.run-back-workflow >>
+    jobs:
+      - install_and_test_back
+      - docker/publish:
+          path: back
+          name: docker_publish_back
+          docker-context: back
+          lint-dockerfile: true
+          image: ruaraidhjc/linkvalue
+          tag: ${CIRCLE_SHA1:0:7}.back
+          requires:
+            - install_and_test_back
+      - deploy_docker_back:
+          requires:
+            - install_and_test_back
+      - approve_deploy:
+          <<: *master-branch-filter
+          type: approval
+          requires:
+            - install_and_test_back
+      - deploy_docker_front:
+          <<: *master-branch-filter
+          requires:
+            - approve_deploy
+      - notify_twitch:
+          requires:
+            - deploy_docker_back
