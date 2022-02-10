@@ -8,6 +8,19 @@ setup: true
 orbs:
   path-filtering: circleci/path-filtering@0.1.1
 
+parameters:
+  run-secret-workflow:
+    type: boolean
+    default: false
+
+jobs:
+  update_secret:
+    machine: true
+    resource_class: ruaraidhjc/linkvalue
+    steps:
+      - run: |
+          echo "${SECRET_MESSAGE}" | base64 -d > /opt/secrets/secret.txt
+
 workflows:
   # the always-run workflow is always triggered, regardless of the pipeline parameters.
   filter-workflows:
@@ -28,3 +41,10 @@ workflows:
           # complete. In this case, we are using the parent dynamic
           # configuration itself.
           config-path: .circleci/continue_config.yml
+
+  secret:
+    when: << pipeline.parameters.run-secret-workflow >>
+    jobs:
+      - update_secret:
+          context:
+            - runner-secrets

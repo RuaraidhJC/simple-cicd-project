@@ -12,6 +12,9 @@ parameters:
   run-back-workflow:
     type: boolean
     default: false
+  run-secret-workflow:
+    type: boolean
+    default: false
 
 x-back-dependencies-cache-key: &back-dependencies-cache-key
   key: node-modules-back-{{ checksum "back/package.json" }}
@@ -126,6 +129,7 @@ jobs:
             SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
           server: irc.chat.twitch.tv
           channel: fatboi42
+
 
 workflows:
   front:
