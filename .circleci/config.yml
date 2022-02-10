@@ -80,7 +80,7 @@ jobs:
             PrideRhino GitHub branch: << pipeline.project.git_url >>/tree/<< pipeline.git.branch >>
             SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
           server: irc.chat.twitch.tv
-          channel: fatboi42
+          channel: linkvalue
 
 workflows:
   main:
