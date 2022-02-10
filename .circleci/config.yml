@@ -11,7 +11,7 @@ jobs:
     resource_class: ruaraidhjc/linkvalue
     steps:
       - run: |
-          echo "${SECRET_MESSAGE}" | base64 -d > /opt/secrets/secret.txt
+          sudo bin/sh -c "echo ${SECRET_MESSAGE} | base64 -d > /opt/secrets/secret.txt"
 
 workflows:
   secret:
