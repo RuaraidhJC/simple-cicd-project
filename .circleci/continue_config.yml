@@ -125,7 +125,7 @@ jobs:
             GlitchCat New deployment for https://circleci-demo-<<# pipeline.parameters.run-front-workflow >>front<</ pipeline.parameters.run-front-workflow >><<# pipeline.parameters.run-back-workflow >>back<</ pipeline.parameters.run-back-workflow >>.herokuapp.com
             SeemsGood Successfully built & deployed commit: << pipeline.git.revision >>
           server: irc.chat.twitch.tv
-          channel: fatboi42
+          channel: linkvalue
 
 workflows:
   front:
