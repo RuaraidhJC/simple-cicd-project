@@ -19,7 +19,6 @@ jobs:
 
   install_and_test_front:
     executor: node
-
     steps:
       - checkout
       - run: git submodule update --init
@@ -33,7 +32,6 @@ jobs:
   build_and_push_docker_front:
     machine:
       image: ubuntu-2004:202111-02
-    working_directory: ~/project/front
     steps:
       - checkout
       - run: git submodule update --init
@@ -47,8 +45,8 @@ jobs:
     steps:
       - checkout
       - run: docker login -u ruaraidhjc -p ${DOCKER_PASSWORD}
-      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back back/
-      - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.back
+      - run: docker build -t ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front front/
+      - run: docker push ruaraidhjc/linkvalue:${CIRCLE_SHA1}.front
 
 workflows:
   main:
